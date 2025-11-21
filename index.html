@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ME-OS 전략 마인드맵 v2.1</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+        
+        :root {
+            --bg-color: #0f172a;
+            --sidebar-bg: #1e293b;
+            --line-color: #475569;
+            --node-bg: #334155;
+            --text-color: #f1f5f9;
+            --accent-1: #6366f1; /* Core */
+            --accent-2: #10b981; /* LifeQuest */
+            --accent-3: #f59e0b; /* Biz Model */
+            --accent-4: #ec4899; /* Tech */
+            --link-color: #38bdf8; /* Link Icon */
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 320px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--line-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--line-color);
+        }
+        .sidebar-header h2 { margin: 0; font-size: 20px; background: linear-gradient(to right, var(--accent-1), var(--accent-4)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sidebar-header p { margin: 5px 0 0; font-size: 12px; color: #94a3b8; }
+
+        .sidebar-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Sidebar Concept & Editor */
+        .concept-card {
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--line-color);
+        }
+        .concept-title { font-size: 14px; color: var(--accent-2); font-weight: 700; margin-bottom: 8px; text-transform: uppercase; }
+        .concept-body { font-size: 14px; line-height: 1.6; color: #cbd5e1; }
+        
+        .detail-editor h3 { margin-top: 0; font-size: 16px; color: #fff; border-bottom: 1px solid var(--line-color); padding-bottom: 10px; }
+        .input-label { font-size: 12px; color: var(--accent-1); font-weight: bold; margin-top: 15px; display: block; margin-bottom: 5px; }
+        
+        .detail-input {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid var(--line-color);
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+        .detail-textarea {
+            height: 150px;
+            resize: none;
+        }
+        .detail-input:focus { outline: none; border-color: var(--accent-1); }
+        .hint-text { font-size: 12px; color: #64748b; margin-top: 5px; }
+
+        /* --- Main Area & Controls --- */
+        .main-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #1e293b 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+        .btn {
+            background: var(--node-bg);
+            color: #fff;
+            border: 1px solid var(--line-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn:hover { background: var(--accent-1); border-color: var(--accent-1); transform: translateY(-2px); }
+        
+        /* --- Map & Nodes --- */
+        #map-container { width: 100%; height: 100%; cursor: grab; transform-origin: 0 0; }
+        #map-content {
+            display: flex; justify-content: center; align-items: center;
+            min-width: 100%; min-height: 100%; padding: 100px;
+            transform-origin: center center; transition: transform 0.1s ease-out;
+        }
+
+        .tree { display: flex; flex-direction: row; align-items: center; }
+        .node-wrapper { display: flex; flex-direction: column; align-items: flex-start; position: relative; margin-left: 50px; }
+        .node-wrapper::before { content: ''; position: absolute; left: -50px; top: 50%; width: 50px; height: 2px; background-color: var(--line-color); }
+        .tree > .node-content { margin-left: 0; }
+        .tree > .node-wrapper { margin-left: 20px; }
+        .tree > .node-wrapper::before { display: none; }
+
+        .children-container { display: flex; flex-direction: column; position: relative; }
+        .children-container > .node-wrapper::after { content: ''; position: absolute; left: -50px; top: 0; bottom: 0; width: 2px; background-color: var(--line-color); }
+        .children-container > .node-wrapper:first-child::after { top: 50%; height: 50%; }
+        .children-container > .node-wrapper:last-child::after { bottom: 50%; height: 50%; top: 0; }
+        .children-container > .node-wrapper:only-child::after { display: none; }
+        .children-container > .node-wrapper:only-child::before { width: 50px; }
+
+        .node-content {
+            background: var(--node-bg);
+            border: 2px solid var(--line-color);
+            border-radius: 12px;
+            padding: 12px 20px;
+            min-width: 140px;
+            text-align: center;
+            position: relative;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 2;
+            display: flex; align-items: center; gap: 8px; margin: 10px 0;
+            cursor: pointer;
+        }
+        .node-content.selected { border-color: var(--accent-2); box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); }
+        .node-content:hover { transform: scale(1.05); border-color: #fff; }
+        
+        .node-text { font-weight: 500; font-size: 14px; outline: none; white-space: pre-wrap; color: #fff; text-decoration: none;}
+        .node-text[contenteditable="true"] { border-bottom: 1px dashed #fff; }
+
+        .root-node { background: linear-gradient(135deg, var(--accent-1), var(--accent-4)); border: none; padding: 20px 40px; font-size: 18px; font-weight: 900; }
+
+        /* Action Buttons on Node */
+        .node-btn { width: 22px; height: 22px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; opacity: 0; transition: all 0.2s; margin-left: 4px; }
+        .add-btn { background: #475569; color: #fff; } .add-btn:hover { background: var(--accent-2); }
+        .del-btn { background: transparent; color: #94a3b8; } .del-btn:hover { color: var(--danger); background: rgba(255,0,0,0.1); }
+        .node-content:hover .node-btn { opacity: 1; }
+
+        /* Link Icon */
+        .link-icon {
+            text-decoration: none;
+            font-size: 16px;
+            margin-left: 6px;
+            background: rgba(56, 189, 248, 0.15);
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+        .link-icon:hover { background: var(--link-color); color: #0f172a; transform: scale(1.2); }
+
+        /* Branch Colors */
+        .branch-edu .node-content { border-left: 4px solid var(--accent-2); }
+        .branch-career .node-content { border-left: 4px solid var(--accent-1); }
+        .branch-bm .node-content { border-left: 4px solid var(--accent-3); }
+        .branch-tech .node-content { border-left: 4px solid var(--accent-4); }
+
+        /* Modal */
+        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(3px); }
+        .modal-box { background: var(--sidebar-bg); padding: 30px; border-radius: 16px; width: 320px; border: 1px solid var(--line-color); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .modal input { width: 100%; padding: 12px; margin: 15px 0; background: #0f172a; border: 1px solid #475569; color: #fff; border-radius: 8px; font-size: 16px; }
+        .modal input:focus { border-color: var(--accent-1); outline: none; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>ME-OS x LifeQuest</h2>
+            <p>통합 플랫폼 전략 v2.1 (Links Added)</p>
+        </div>
+        <div class="sidebar-content">
+            <div id="concept-info">
+                <div class="concept-card">
+                    <div class="concept-title">🔗 Hyperlink Feature</div>
+                    <div class="concept-body">
+                        이제 노드에 <strong>웹 링크(URL)</strong>를 연결할 수 있습니다.<br>
+                        노드를 클릭하고 사이드바의 <strong>'Link URL'</strong> 칸에 주소를 입력하세요.<br>
+                        (예: 노션 페이지, 구글 드라이브, 경쟁사 사이트)
+                    </div>
+                </div>
+            </div>
+
+            <div id="detail-editor" class="detail-editor" style="display:none;">
+                <h3>📝 상세 기획 & 링크</h3>
+                <div style="margin-bottom:10px; font-weight:bold; color:var(--accent-2);" id="selected-node-title"></div>
+                
+                <label class="input-label">Link URL (http://...)</label>
+                <input type="text" id="node-link" class="detail-input" placeholder="연결할 웹페이지 주소를 입력하세요">
+                
+                <label class="input-label">Description</label>
+                <textarea id="node-desc" class="detail-input detail-textarea" placeholder="구체적인 실행 방안, 메모를 기록하세요."></textarea>
+                
+                <div class="hint-text">* 자동 저장됩니다.</div>
+                <button class="btn" style="margin-top:15px; width:100%; justify-content:center;" onclick="deselectNode()">닫기</button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-area">
+        <div class="controls">
+            <button class="btn" onclick="resetView()">👁️ 뷰 초기화</button>
+            <button class="btn" onclick="saveToFile()">💾 파일 저장</button>
+            <button class="btn" onclick="document.getElementById('file-input').click()">📂 불러오기</button>
+            <input type="file" id="file-input" style="display:none;" accept=".json" onchange="loadFromFile(this)">
+        </div>
+
+        <div id="map-container">
+            <div id="map-content"></div>
+        </div>
+    </main>
+
+    <div class="modal" id="addModal">
+        <div class="modal-box">
+            <h3 style="margin-top:0; color:#fff;">💡 새로운 아이디어</h3>
+            <input type="text" id="newNodeText" placeholder="예: 경쟁사 A 분석" autocomplete="off">
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button class="btn" style="background:transparent;" onclick="closeModal()">취소</button>
+                <button class="btn" style="background:var(--accent-1); border:none;" onclick="confirmAddNode()">추가하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Data Structure (Sample with Links) ---
+        let mapData = {
+            id: 'root',
+            text: 'ME-OS\nPlatform',
+            description: '통합 플랫폼 최상위 전략도입니다.',
+            link: 'https://www.google.com', // 예시 링크
+            type: 'root',
+            children: [
+                {
+                    id: 'core', text: 'Core Engine', type: 'branch-tech', description: '핵심 진단 기술',
+                    children: [
+                        { id: 'c1', text: '동적 진단 (8Q)', link: '' },
+                        { id: 'c2', text: '맞춤 처방 (RAG)' }
+                    ]
+                },
+                {
+                    id: 'edu', text: 'Expansion\n[EDU]', type: 'branch-edu',
+                    children: [
+                        { id: 'e1', text: '1일 1문제', link: 'https://qanda.ai' } // 경쟁사 링크 예시
+                    ]
+                }
+            ]
+        };
+
+        // --- 2. Rendering Logic (Updated with Links) ---
+        const container = document.getElementById('map-content');
+        let selectedNodeId = null;
+
+        function renderTree(node, containerEl) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'tree';
+            
+            const content = document.createElement('div');
+            const isSelected = node.id === selectedNodeId ? 'selected' : '';
+            content.className = `node-content ${node.type || ''} ${node.id === 'root' ? 'root-node' : ''} ${isSelected}`;
+            
+            content.onclick = (e) => {
+                e.stopPropagation();
+                selectNode(node.id);
+            };
+
+            // [Updated] Render Link Icon if exists
+            const linkIcon = node.link ? 
+                `<a href="${node.link}" target="_blank" class="link-icon" onclick="event.stopPropagation()" title="${node.link}">🔗</a>` 
+                : '';
+
+            content.innerHTML = `
+                <div class="node-text" contenteditable="true" 
+                     onblur="updateText('${node.id}', this.innerText)"
+                     onclick="event.stopPropagation()"
+                     >${node.text.replace(/\n/g, '<br>')}</div>
+                ${linkIcon}
+                <button class="node-btn add-btn" onclick="event.stopPropagation(); openModal('${node.id}')">+</button>
+                ${node.id !== 'root' ? `<button class="node-btn del-btn" onclick="event.stopPropagation(); deleteNode('${node.id}')">x</button>` : ''}
+            `;
+            wrapper.appendChild(content);
+
+            if (node.children && node.children.length > 0) {
+                const childrenContainer = document.createElement('div');
+                childrenContainer.className = 'children-container';
+                node.children.forEach(child => {
+                    const childWrapper = document.createElement('div');
+                    childWrapper.className = 'node-wrapper';
+                    renderTree(child, childWrapper);
+                    childrenContainer.appendChild(childWrapper);
+                });
+                wrapper.appendChild(childrenContainer);
+            }
+            containerEl.appendChild(wrapper);
+        }
+
+        function refreshMap() {
+            container.innerHTML = '';
+            renderTree(mapData, container);
+        }
+
+        // --- 3. Interaction & Sidebar Logic ---
+
+        function findNode(id, node) {
+            if (node.id === id) return node;
+            if (node.children) {
+                for (let child of node.children) {
+                    const found = findNode(id, child);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        function findParent(id, node) {
+            if (node.children) {
+                for (let child of node.children) {
+                    if (child.id === id) return node;
+                    const found = findParent(id, child);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        // [Sidebar Update]
+        function selectNode(id) {
+            selectedNodeId = id;
+            refreshMap();
+
+            const node = findNode(id, mapData);
+            if (!node) return;
+
+            document.getElementById('concept-info').style.display = 'none';
+            document.getElementById('detail-editor').style.display = 'block';
+            
+            document.getElementById('selected-node-title').textContent = node.text.replace(/\n/g, ' ');
+            
+            const descArea = document.getElementById('node-desc');
+            const linkInput = document.getElementById('node-link'); // [New] Link Input
+
+            descArea.value = node.description || '';
+            linkInput.value = node.link || ''; // [New] Load Link
+            
+            // Update Description on Input
+            descArea.oninput = function() { node.description = this.value; };
+            
+            // [New] Update Link on Input & Refresh Map (to show/hide icon)
+            linkInput.oninput = function() { 
+                node.link = this.value; 
+                // Debounce refresh slightly for performance if needed, but fine here
+                // refreshMap(); // Typing마다 리렌더링하면 focus 잃음 -> onblur로 처리하거나 아이콘만 갱신해야 함.
+            };
+            linkInput.onblur = function() { refreshMap(); }; // 포커스 나갈 때 아이콘 갱신
+        }
+
+        function deselectNode() {
+            selectedNodeId = null;
+            refreshMap();
+            document.getElementById('concept-info').style.display = 'block';
+            document.getElementById('detail-editor').style.display = 'none';
+        }
+
+        // [Edit Nodes]
+        let currentNodeIdForAdd = null;
+        function openModal(parentId) {
+            currentNodeIdForAdd = parentId;
+            document.getElementById('newNodeText').value = '';
+            document.getElementById('addModal').style.display = 'flex';
+            document.getElementById('newNodeText').focus();
+            document.getElementById('newNodeText').onkeypress = function(e){ if(e.key === 'Enter') confirmAddNode(); };
+        }
+        function closeModal() { document.getElementById('addModal').style.display = 'none'; }
+        function confirmAddNode() {
+            const text = document.getElementById('newNodeText').value;
+            if (!text) return;
+            const parent = findNode(currentNodeIdForAdd, mapData);
+            if (parent) {
+                if (!parent.children) parent.children = [];
+                parent.children.push({ id: 'n-' + Date.now(), text: text, type: parent.type });
+                refreshMap();
+            }
+            closeModal();
+        }
+        function deleteNode(id) {
+            if (!confirm('삭제하시겠습니까?')) return;
+            const parent = findParent(id, mapData);
+            if (parent) {
+                parent.children = parent.children.filter(c => c.id !== id);
+                if (selectedNodeId === id) deselectNode();
+                refreshMap();
+            }
+        }
+        function updateText(id, newText) {
+            const node = findNode(id, mapData);
+            if (node) node.text = newText;
+        }
+
+        // --- 4. Save & Load ---
+        function saveToFile() {
+            const dataStr = JSON.stringify(mapData, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `MEOS_Strategy_v2.1_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert("저장되었습니다.");
+        }
+        function loadFromFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const loadedData = JSON.parse(e.target.result);
+                    if (loadedData.id) {
+                        mapData = loadedData;
+                        selectedNodeId = null;
+                        refreshMap();
+                        deselectNode();
+                        alert("불러오기 성공!");
+                    }
+                } catch (err) { alert("파일 오류!"); }
+            };
+            reader.readAsText(file);
+            input.value = '';
+        }
+
+        // --- 5. Zoom & Pan ---
+        const mapContainer = document.getElementById('map-container');
+        const mapContent = document.getElementById('map-content');
+        let scale = 0.9, pointX = 0, pointY = 0, startX = 0, startY = 0, panning = false;
+
+        function setTransform() { mapContent.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`; }
+        mapContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const xs = (e.clientX - pointX) / scale, ys = (e.clientY - pointY) / scale;
+            const delta = -e.deltaY;
+            (delta > 0) ? (scale *= 1.1) : (scale /= 1.1);
+            pointX = e.clientX - xs * scale; pointY = e.clientY - ys * scale;
+            setTransform();
+        });
+        mapContainer.onmousedown = function (e) {
+            if (e.target.contentEditable === "true" || e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
+            e.preventDefault(); startX = e.clientX - pointX; startY = e.clientY - pointY; panning = true; mapContainer.style.cursor = 'grabbing';
+        }
+        mapContainer.onmouseup = function () { panning = false; mapContainer.style.cursor = 'grab'; }
+        mapContainer.onmousemove = function (e) {
+            if (!panning) return;
+            e.preventDefault(); pointX = e.clientX - startX; pointY = e.clientY - startY; setTransform();
+        }
+        function resetView() { scale = 0.9; pointX = 0; pointY = 0; setTransform(); }
+
+        // Init
+        refreshMap();
+        resetView();
+
+    </script>
+</body>
+</html>
