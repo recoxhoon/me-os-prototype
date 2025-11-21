@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ME-OS 전략 마인드맵 v2.1</title>
+    <title>ME-OS 전략 마인드맵 v2.2 (Auto-Save)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
         
@@ -17,7 +17,7 @@
             --accent-2: #10b981; /* LifeQuest */
             --accent-3: #f59e0b; /* Biz Model */
             --accent-4: #ec4899; /* Tech */
-            --link-color: #38bdf8; /* Link Icon */
+            --link-color: #38bdf8;
         }
 
         * { box-sizing: border-box; }
@@ -57,7 +57,6 @@
             overflow-y: auto;
         }
 
-        /* Sidebar Concept & Editor */
         .concept-card {
             background: rgba(0,0,0,0.2);
             border-radius: 8px;
@@ -81,10 +80,7 @@
             font-family: inherit;
             font-size: 14px;
         }
-        .detail-textarea {
-            height: 150px;
-            resize: none;
-        }
+        .detail-textarea { height: 150px; resize: none; }
         .detail-input:focus { outline: none; border-color: var(--accent-1); }
         .hint-text { font-size: 12px; color: #64748b; margin-top: 5px; }
 
@@ -118,6 +114,14 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .btn:hover { background: var(--accent-1); border-color: var(--accent-1); transform: translateY(-2px); }
+        .btn-danger:hover { background: var(--danger); border-color: var(--danger); }
+
+        /* Save Indicator */
+        #save-status {
+            position: absolute; bottom: 20px; right: 20px;
+            color: var(--accent-2); font-size: 12px; font-weight: bold;
+            opacity: 0; transition: opacity 0.5s; pointer-events: none;
+        }
         
         /* --- Map & Nodes --- */
         #map-container { width: 100%; height: 100%; cursor: grab; transform-origin: 0 0; }
@@ -163,23 +167,16 @@
 
         .root-node { background: linear-gradient(135deg, var(--accent-1), var(--accent-4)); border: none; padding: 20px 40px; font-size: 18px; font-weight: 900; }
 
-        /* Action Buttons on Node */
         .node-btn { width: 22px; height: 22px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; opacity: 0; transition: all 0.2s; margin-left: 4px; }
         .add-btn { background: #475569; color: #fff; } .add-btn:hover { background: var(--accent-2); }
         .del-btn { background: transparent; color: #94a3b8; } .del-btn:hover { color: var(--danger); background: rgba(255,0,0,0.1); }
         .node-content:hover .node-btn { opacity: 1; }
 
-        /* Link Icon */
         .link-icon {
-            text-decoration: none;
-            font-size: 16px;
-            margin-left: 6px;
-            background: rgba(56, 189, 248, 0.15);
-            width: 24px; height: 24px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s;
-            border: 1px solid rgba(56, 189, 248, 0.3);
+            text-decoration: none; font-size: 16px; margin-left: 6px;
+            background: rgba(56, 189, 248, 0.15); width: 24px; height: 24px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; border: 1px solid rgba(56, 189, 248, 0.3);
         }
         .link-icon:hover { background: var(--link-color); color: #0f172a; transform: scale(1.2); }
 
@@ -201,16 +198,17 @@
     <aside class="sidebar">
         <div class="sidebar-header">
             <h2>ME-OS x LifeQuest</h2>
-            <p>통합 플랫폼 전략 v2.1 (Links Added)</p>
+            <p>통합 플랫폼 전략 v2.2 (Auto-Save)</p>
         </div>
         <div class="sidebar-content">
             <div id="concept-info">
                 <div class="concept-card">
-                    <div class="concept-title">🔗 Hyperlink Feature</div>
+                    <div class="concept-title">✨ Auto-Save Enabled</div>
                     <div class="concept-body">
-                        이제 노드에 <strong>웹 링크(URL)</strong>를 연결할 수 있습니다.<br>
-                        노드를 클릭하고 사이드바의 <strong>'Link URL'</strong> 칸에 주소를 입력하세요.<br>
-                        (예: 노션 페이지, 구글 드라이브, 경쟁사 사이트)
+                        모든 변경 사항은 <strong>브라우저에 자동 저장</strong>됩니다.<br>
+                        새로고침하거나 창을 닫아도 작업 내용이 유지됩니다.<br>
+                        <br>
+                        * 초기화하려면 우측 상단 <strong>'초기화'</strong> 버튼을 누르세요.
                     </div>
                 </div>
             </div>
@@ -225,7 +223,7 @@
                 <label class="input-label">Description</label>
                 <textarea id="node-desc" class="detail-input detail-textarea" placeholder="구체적인 실행 방안, 메모를 기록하세요."></textarea>
                 
-                <div class="hint-text">* 자동 저장됩니다.</div>
+                <div class="hint-text">* 입력 시 자동 저장됩니다.</div>
                 <button class="btn" style="margin-top:15px; width:100%; justify-content:center;" onclick="deselectNode()">닫기</button>
             </div>
         </div>
@@ -233,11 +231,12 @@
 
     <main class="main-area">
         <div class="controls">
-            <button class="btn" onclick="resetView()">👁️ 뷰 초기화</button>
-            <button class="btn" onclick="saveToFile()">💾 파일 저장</button>
+            <button class="btn" onclick="saveToFile()">💾 백업 저장</button>
             <button class="btn" onclick="document.getElementById('file-input').click()">📂 불러오기</button>
+            <button class="btn btn-danger" onclick="factoryReset()">🔄 초기화</button>
             <input type="file" id="file-input" style="display:none;" accept=".json" onchange="loadFromFile(this)">
         </div>
+        <div id="save-status">✅ 자동 저장됨</div>
 
         <div id="map-container">
             <div id="map-content"></div>
@@ -256,31 +255,73 @@
     </div>
 
     <script>
-        // --- 1. Data Structure (Sample with Links) ---
-        let mapData = {
+        // --- 1. Default Data ---
+        const defaultData = {
             id: 'root',
             text: 'ME-OS\nPlatform',
             description: '통합 플랫폼 최상위 전략도입니다.',
-            link: 'https://www.google.com', // 예시 링크
+            link: '', 
             type: 'root',
             children: [
                 {
                     id: 'core', text: 'Core Engine', type: 'branch-tech', description: '핵심 진단 기술',
                     children: [
-                        { id: 'c1', text: '동적 진단 (8Q)', link: '' },
+                        { id: 'c1', text: '동적 진단 (8Q)' },
                         { id: 'c2', text: '맞춤 처방 (RAG)' }
                     ]
                 },
                 {
                     id: 'edu', text: 'Expansion\n[EDU]', type: 'branch-edu',
                     children: [
-                        { id: 'e1', text: '1일 1문제', link: 'https://qanda.ai' } // 경쟁사 링크 예시
+                        { id: 'e1', text: '1일 1문제' }
                     ]
                 }
             ]
         };
 
-        // --- 2. Rendering Logic (Updated with Links) ---
+        let mapData = JSON.parse(JSON.stringify(defaultData)); // Deep copy
+        const STORAGE_KEY = 'meos_mindmap_v2';
+
+        // --- 2. Persistence (Auto-Save) Logic ---
+        
+        function init() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    mapData = JSON.parse(saved);
+                    console.log("Loaded from LocalStorage");
+                } catch(e) {
+                    console.error("Load failed, using default");
+                }
+            }
+            refreshMap();
+            resetView();
+        }
+
+        function autoSave() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(mapData));
+            showSaveIndicator();
+        }
+
+        function showSaveIndicator() {
+            const el = document.getElementById('save-status');
+            el.style.opacity = '1';
+            setTimeout(() => el.style.opacity = '0', 1500);
+        }
+
+        function factoryReset() {
+            if(confirm("모든 변경사항을 삭제하고 초기 상태로 되돌리겠습니까?")) {
+                localStorage.removeItem(STORAGE_KEY);
+                mapData = JSON.parse(JSON.stringify(defaultData));
+                selectedNodeId = null;
+                deselectNode();
+                refreshMap();
+                resetView();
+                alert("초기화되었습니다.");
+            }
+        }
+
+        // --- 3. Rendering Logic ---
         const container = document.getElementById('map-content');
         let selectedNodeId = null;
 
@@ -297,7 +338,6 @@
                 selectNode(node.id);
             };
 
-            // [Updated] Render Link Icon if exists
             const linkIcon = node.link ? 
                 `<a href="${node.link}" target="_blank" class="link-icon" onclick="event.stopPropagation()" title="${node.link}">🔗</a>` 
                 : '';
@@ -332,7 +372,7 @@
             renderTree(mapData, container);
         }
 
-        // --- 3. Interaction & Sidebar Logic ---
+        // --- 4. Data Manipulation ---
 
         function findNode(id, node) {
             if (node.id === id) return node;
@@ -356,7 +396,6 @@
             return null;
         }
 
-        // [Sidebar Update]
         function selectNode(id) {
             selectedNodeId = id;
             refreshMap();
@@ -366,25 +405,24 @@
 
             document.getElementById('concept-info').style.display = 'none';
             document.getElementById('detail-editor').style.display = 'block';
-            
             document.getElementById('selected-node-title').textContent = node.text.replace(/\n/g, ' ');
             
             const descArea = document.getElementById('node-desc');
-            const linkInput = document.getElementById('node-link'); // [New] Link Input
+            const linkInput = document.getElementById('node-link');
 
             descArea.value = node.description || '';
-            linkInput.value = node.link || ''; // [New] Load Link
+            linkInput.value = node.link || '';
             
-            // Update Description on Input
-            descArea.oninput = function() { node.description = this.value; };
-            
-            // [New] Update Link on Input & Refresh Map (to show/hide icon)
+            // Auto-save on input
+            descArea.oninput = function() { 
+                node.description = this.value; 
+                autoSave(); // Save!
+            };
             linkInput.oninput = function() { 
                 node.link = this.value; 
-                // Debounce refresh slightly for performance if needed, but fine here
-                // refreshMap(); // Typing마다 리렌더링하면 focus 잃음 -> onblur로 처리하거나 아이콘만 갱신해야 함.
+                autoSave(); // Save!
             };
-            linkInput.onblur = function() { refreshMap(); }; // 포커스 나갈 때 아이콘 갱신
+            linkInput.onblur = function() { refreshMap(); };
         }
 
         function deselectNode() {
@@ -394,7 +432,6 @@
             document.getElementById('detail-editor').style.display = 'none';
         }
 
-        // [Edit Nodes]
         let currentNodeIdForAdd = null;
         function openModal(parentId) {
             currentNodeIdForAdd = parentId;
@@ -404,6 +441,7 @@
             document.getElementById('newNodeText').onkeypress = function(e){ if(e.key === 'Enter') confirmAddNode(); };
         }
         function closeModal() { document.getElementById('addModal').style.display = 'none'; }
+        
         function confirmAddNode() {
             const text = document.getElementById('newNodeText').value;
             if (!text) return;
@@ -411,38 +449,45 @@
             if (parent) {
                 if (!parent.children) parent.children = [];
                 parent.children.push({ id: 'n-' + Date.now(), text: text, type: parent.type });
+                autoSave(); // Save!
                 refreshMap();
             }
             closeModal();
         }
+
         function deleteNode(id) {
             if (!confirm('삭제하시겠습니까?')) return;
             const parent = findParent(id, mapData);
             if (parent) {
                 parent.children = parent.children.filter(c => c.id !== id);
                 if (selectedNodeId === id) deselectNode();
+                autoSave(); // Save!
                 refreshMap();
             }
         }
+
         function updateText(id, newText) {
             const node = findNode(id, mapData);
-            if (node) node.text = newText;
+            if (node) {
+                node.text = newText;
+                autoSave(); // Save!
+            }
         }
 
-        // --- 4. Save & Load ---
+        // --- 5. File Save/Load ---
         function saveToFile() {
             const dataStr = JSON.stringify(mapData, null, 2);
             const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `MEOS_Strategy_v2.1_${new Date().toISOString().slice(0,10)}.json`;
+            a.download = `MEOS_Strategy_v2.2_${new Date().toISOString().slice(0,10)}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            alert("저장되었습니다.");
         }
+
         function loadFromFile(input) {
             const file = input.files[0];
             if (!file) return;
@@ -452,6 +497,7 @@
                     const loadedData = JSON.parse(e.target.result);
                     if (loadedData.id) {
                         mapData = loadedData;
+                        autoSave(); // Save loaded data
                         selectedNodeId = null;
                         refreshMap();
                         deselectNode();
@@ -463,7 +509,7 @@
             input.value = '';
         }
 
-        // --- 5. Zoom & Pan ---
+        // --- 6. Zoom & Pan ---
         const mapContainer = document.getElementById('map-container');
         const mapContent = document.getElementById('map-content');
         let scale = 0.9, pointX = 0, pointY = 0, startX = 0, startY = 0, panning = false;
@@ -471,10 +517,8 @@
         function setTransform() { mapContent.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`; }
         mapContainer.addEventListener('wheel', (e) => {
             e.preventDefault();
-            const xs = (e.clientX - pointX) / scale, ys = (e.clientY - pointY) / scale;
             const delta = -e.deltaY;
             (delta > 0) ? (scale *= 1.1) : (scale /= 1.1);
-            pointX = e.clientX - xs * scale; pointY = e.clientY - ys * scale;
             setTransform();
         });
         mapContainer.onmousedown = function (e) {
@@ -488,9 +532,8 @@
         }
         function resetView() { scale = 0.9; pointX = 0; pointY = 0; setTransform(); }
 
-        // Init
-        refreshMap();
-        resetView();
+        // Start
+        init();
 
     </script>
 </body>
